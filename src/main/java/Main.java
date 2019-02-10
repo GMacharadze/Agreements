@@ -23,7 +23,7 @@ public class Main {
             String jsonText = web.getContentByURL(url);
 
             work.work(jsonText, pargs);
-
+            
             offset += pargs.pageSize;
         }
         return;

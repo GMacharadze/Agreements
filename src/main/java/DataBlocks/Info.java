@@ -17,10 +17,9 @@ import java.util.HashMap;
  */
 public class Info extends AbstractBlock {
 
-    public Info(JSONObject info, String id)
-    {
+    public Info(JSONObject info, String id) {
         super(27, "info");
-        this.fieldName = new String[] {
+        this.fieldName = new String[]{
                 "id", "name", "regNum", "startDate", "endDate", "sum",
                 "currencySum", "currencyName", "currencyCode", "code",
                 "numAgreem", "dateAgreem", "numberNpa", "dateReg",

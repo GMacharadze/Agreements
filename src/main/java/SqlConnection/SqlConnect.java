@@ -18,16 +18,14 @@ public class SqlConnect {
 
     Connection sql;
 
-    private String getConnectionString(final ProgramArgs args)
-    {
+    private String getConnectionString(final ProgramArgs args) {
         return String.format(
                 "jdbc:jtds:sqlserver://%s;databaseName=%s;user=%s;password=%s",
                 args.address, args.dbName, args.userName, args.userPass
         );
     }
 
-    public int connect(final ProgramArgs args)
-    {
+    public int connect(final ProgramArgs args) {
         try {
             Class.forName("net.sourceforge.jtds.jdbc.Driver");
         } catch (ClassNotFoundException e) {
@@ -45,8 +43,7 @@ public class SqlConnect {
         return 0;
     }
 
-    public void disconnect()
-    {
+    public void disconnect() {
         try {
             if (!sql.isClosed())
                 sql.close();
@@ -60,8 +57,9 @@ public class SqlConnect {
             return 1;
         if (blocks.isEmpty())
             return 0;
+
         PreparedStatement ps = sql.prepareStatement(blocks.get(0).getQuery());
-        for(AbstractBlock block: blocks) {
+        for (AbstractBlock block : blocks) {
             for (int i = 0; i < block.fieldCount; ++i)
                 ps.setString(i + 1, block.data.get(block.fieldName[i]));
             ps.addBatch();

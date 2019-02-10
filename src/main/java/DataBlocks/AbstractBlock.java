@@ -34,6 +34,7 @@ public abstract class AbstractBlock {
     /**
      * Сформировать запрос добавления в таблицу экземпляра
      * реализуемого класса.
+     *
      * @return - запрос добавления в таблицу.
      */
     public String getQuery() {

@@ -17,13 +17,13 @@ import java.net.URL;
 public class WebManager {
     /**
      * Чтение содержимого web страницы
+     *
      * @param url - сссылка на web страницу
      * @return - при успешном завершении возвращается
      * содержимое запрашиваемой страницы, в противном
      * случае - null.
      */
-    public String getContentByURL(final String url)
-    {
+    public String getContentByURL(final String url) {
         StringBuilder str = null;
         try {
             URL oracle = new URL(url);
@@ -35,7 +35,7 @@ public class WebManager {
             while ((inputLine = in.readLine()) != null)
                 str.append(inputLine);
             in.close();
-        } catch(IOException e) {
+        } catch (IOException e) {
             System.out.println("Не удалось прочитать содержимое страницы " + url);
             System.out.println("Ошибка: " + e.getMessage());
             return null;
@@ -45,13 +45,13 @@ public class WebManager {
 
     /**
      * Получение ссылки на страницу по заданному смещению
-     * @param args - структура с аргументами из ini-файла
+     *
+     * @param args   - структура с аргументами из ini-файла
      * @param offset - смещение, относительно которого необходимо
      *               сформировать ссылку
      * @return - адрес запрашиваемой ссылки
      */
-    public String getUrlByOffset(final ProgramArgs args, final int offset)
-    {
+    public String getUrlByOffset(final ProgramArgs args, final int offset) {
         final String addition = String.format("pageSize=%d&offset=%d", args.pageSize, offset);
         return args.url + addition;
     }
@@ -59,17 +59,17 @@ public class WebManager {
     /**
      * Чтение общего количества записей на странице
      * с открытыми данными
+     *
      * @param args - структура с аргументами из ini-файла
      * @return - общее количество записей
      */
-    public int getTotalRecords(final ProgramArgs args)
-    {
+    public int getTotalRecords(final ProgramArgs args) {
         String jsonText = getContentByURL(args.url + "pageSize=1");
         JSONParser parser = new JSONParser();
         JSONObject jsonObject;
         try {
             jsonObject = (JSONObject) parser.parse(jsonText);
-        } catch(ParseException e) {
+        } catch (ParseException e) {
             System.out.println("Ошибка в формате JSON данных " + e.getMessage());
             return 0;
         }

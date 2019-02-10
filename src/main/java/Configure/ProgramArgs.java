@@ -8,8 +8,29 @@ import org.ini4j.Ini;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 
 public class ProgramArgs {
+    /**
+     * url - базовый адрес страницы с данными в формате JSON
+     * pageSize - количество записей на одной загружаемой страницы.
+     * Увеличение этого параметра приводит к увеличению скорости
+     * работы программы и к увеличению потребляемой
+     * оперативной памяти. Максимальное значение - 1000.
+     * blockSingleName - названия блоков данных (1<->1)
+     * blockMultiplyName - названия блоков данных (1<->много)
+     */
+    final public String url = "http://budget.gov.ru/epbs/registry/grants/data?";
+    final public int pageSize = 1000;
+    final public LinkedHashMap<String, blockType> blocks;
+    /**
+     * iniFileName - имя ini-файла
+     */
+    final private String iniFileName = "config.ini";
+
+    /**
+     * Информация о странице с openData:
+     */
     /**
      * Информация о подключаемой БД:
      * address - адрес сервера. Формат: serverName[\instanceName][:portNumber]
@@ -22,24 +43,28 @@ public class ProgramArgs {
     public String userName;
     public String userPass;
 
-    /**
-     * Информация о странице с openData:
-     * url - базовый адрес страницы с данными в формате JSON
-     * pageSize - количество записей на одной загружаемой страницы.
-     * Увеличение этого параметра приводит к увеличению скорости
-     * работы программы и к увеличению потребляемой
-     * оперативной памяти. Максимальное значение - 1000.
-     */
-    final public String url = "http://budget.gov.ru/epbs/registry/grants/data?";
-    final public int pageSize = 500;
-
-    /**
-     * iniFileName - имя ini-файла
-     */
-    final private String iniFileName = "config.ini";
+    public ProgramArgs() {
+        blocks = new LinkedHashMap<>();
+        blocks.put("info", blockType.OTO);
+        blocks.put("grbs", blockType.OTO);
+        blocks.put("documents", blockType.OTM);
+        blocks.put("changes", blockType.OTM);
+        blocks.put("payments", blockType.OTM);
+        blocks.put("marks", blockType.OTM);
+        blocks.put("npa", blockType.OTM);
+        blocks.put("bo", blockType.OTM);
+        blocks.put("construct", blockType.OTM);
+        blocks.put("subjectNpa", blockType.OTM);
+        blocks.put("infoind", blockType.OTM);
+        blocks.put("infocost", blockType.OTM);
+        blocks.put("infosub", blockType.OTM);
+        blocks.put("infoind", blockType.OTM);
+        blocks.put("indicatorvalue", blockType.OTM);
+    }
 
     /**
      * Чтение аргументов из конфигурационного файла iniFileName.
+     *
      * @return - 0 в случае успеха. В противном случае, 1.
      */
     public int parseArgs() {
@@ -60,5 +85,18 @@ public class ProgramArgs {
             return 1;
         }
         return 0;
+    }
+
+    /**
+     * Тип блока данных:
+     * OTO - каждой записи соответстует единственный блок;
+     * OTM - каждой записи соответствует несколько блоков;
+     * MTM - каждой записи соответствует несколько блоков и
+     * в каждом блоке возможно внутренняя иерархия блоков
+     */
+    public enum blockType {
+        OTO,
+        OTM,
+        MTM
     }
 }
