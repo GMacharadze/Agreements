@@ -8,15 +8,12 @@ package SqlConnection;
 import Configure.ProgramArgs;
 import DataBlocks.AbstractBlock;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class SqlConnect {
 
-    Connection sql;
+    private Connection sql;
 
     private String getConnectionString(final ProgramArgs args) {
         return String.format(
@@ -25,22 +22,21 @@ public class SqlConnect {
         );
     }
 
-    public int connect(final ProgramArgs args) {
+    public void connect(final ProgramArgs args) {
         try {
             Class.forName("net.sourceforge.jtds.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             System.out.println("Ошибка при подключении драйверу jdbc " + e.getMessage());
-            return 1;
         }
 
+        sql = null;
         try {
             if (sql == null || sql.isClosed())
                 sql = DriverManager.getConnection(getConnectionString(args));
         } catch (SQLException e) {
             System.out.println("Ошибка при подключении к базе данных " + e.getMessage());
-            return 1;
+            System.exit(1);
         }
-        return 0;
     }
 
     public void disconnect() {
@@ -52,12 +48,12 @@ public class SqlConnect {
         }
     }
 
-    public int multiplyQuery(ArrayList<AbstractBlock> blocks, ProgramArgs args) throws SQLException {
-        if (connect(args) != 0)
-            return 1;
-        if (blocks.isEmpty())
-            return 0;
+    public void deleteTable(String table) throws SQLException {
+        PreparedStatement ps = sql.prepareStatement("delete from " + table);
+        ps.execute();
+    }
 
+    private int insertBatch(ArrayList<AbstractBlock> blocks) throws SQLException {
         PreparedStatement ps = sql.prepareStatement(blocks.get(0).getQuery());
         for (AbstractBlock block : blocks) {
             for (int i = 0; i < block.fieldCount; ++i)
@@ -66,8 +62,122 @@ public class SqlConnect {
         }
         ps.executeBatch();
         ps.close();
-        blocks.clear();
-        disconnect();
         return 0;
+    }
+
+    private int insertBatch2(ArrayList<AbstractBlock> blocks, PreparedStatement ps, int id) throws SQLException {
+
+        if (blocks.size() == 0)
+            return 0;
+
+        for (AbstractBlock block : blocks) {
+            ps.setInt(1, id);
+            for (int i = 1; i < block.fieldCount; ++i)
+                ps.setString(i + 1, block.data.get(block.fieldName[i]));
+            ps.addBatch();
+        }
+        return 0;
+    }
+
+    private int getNextPrimaryKey(Connection sql, AbstractBlock block) {
+        try {
+            PreparedStatement ps = sql.prepareStatement(block.getLastIdQueary());
+            ResultSet resultSet = ps.executeQuery();
+            if (resultSet.next())
+                return resultSet.getInt("id") + 1;
+            return 1;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 1;
+        }
+    }
+
+    private int ins(AbstractBlock block, Connection sql) throws SQLException {
+        String[] generatedColumns = { "id" };
+        PreparedStatement ps = sql.prepareStatement(block.getQuery(), generatedColumns);
+        for (int i = 0; i < block.fieldCount; ++i)
+            ps.setString(i + 1, block.data.get(block.fieldName[i]));
+        ps.execute();
+
+        ResultSet resultSet = ps.getGeneratedKeys();
+        if (resultSet.next())
+            return resultSet.getInt("id");
+        else {
+            System.out.println("Ошибка при вставке данных в таблицу " + block.table);
+            System.exit(1);
+            return 1;
+        }
+    }
+
+    private int insertSignle(ArrayList<AbstractBlock> blocks) throws SQLException {
+        PreparedStatement ps = sql.prepareStatement(blocks.get(0).getQuery());
+        for (AbstractBlock block : blocks) {
+
+            for (int i = 0; i < block.fieldCount; ++i)
+                ps.setString(i + 1, block.data.get(block.fieldName[i]));
+
+            for (int i = 0; i < block.nested_tables.length; ++i) {
+                if (block.nested[i].isNull())
+                    ps.setNull(block.fieldCount + i + 1, java.sql.Types.INTEGER);
+                else
+                    ps.setInt(block.fieldCount + i + 1, ins(block.nested[i], sql));
+            }
+            ps.addBatch();
+        }
+
+        ps.executeBatch();
+        ps.close();
+        return 0;
+    }
+
+    private int insertSignle2(ArrayList<AbstractBlock> blocks) throws SQLException {
+        PreparedStatement ps = sql.prepareStatement(blocks.get(0).getQuery());
+        PreparedStatement[] pss = new PreparedStatement[blocks.get(0).nested_tables.length];
+
+        int id = getNextPrimaryKey(sql, blocks.get(0));
+
+        for (AbstractBlock block : blocks) {
+            ps.setInt(1, id);
+            for (int i = 1; i < block.fieldCount; ++i)
+                ps.setString(i + 1, block.data.get(block.fieldName[i]));
+            ps.addBatch();
+
+            for (int i = 0; i < block.nested_tables.length; ++i) {
+                ArrayList<AbstractBlock> tmp = block.nested_array.get(i);
+                if (tmp.isEmpty())
+                    continue;
+                pss[i] = sql.prepareStatement(tmp.get(0).getQuery());
+                insertBatch2(block.nested_array.get(i), pss[i], id++);
+            }
+        }
+
+        ps.executeBatch();
+        ps.close();
+
+        for (int i = 0; i < blocks.get(0).nested_tables.length; ++i) {
+            pss[i].executeBatch();
+            pss[i].close();
+        }
+
+        return 0;
+    }
+
+    public void insertRecords(ArrayList<AbstractBlock> blocks) throws SQLException {
+        if (blocks.isEmpty())
+            return;
+
+        switch(blocks.get(0).getBlockType()) {
+            case BLOCK_TYPE_SIMPLE:
+                insertBatch(blocks);
+                break;
+            case BLOCK_TYPE_WITH_LINKS_TO:
+                insertSignle(blocks);
+                break;
+            case BLOCK_TYPE_WITH_LINKS_FROM:
+                insertSignle2(blocks);
+                break;
+        }
+        blocks.clear();
     }
 }
