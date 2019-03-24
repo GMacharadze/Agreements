@@ -71,6 +71,7 @@ public class ProgramArgs {
             ini = new Ini(new File(iniFileName));
         } catch (IOException e) {
             System.out.println("Ошибка при открытии файла " + iniFileName);
+            System.out.println(e.getMessage());
             return 1;
         }
         address = ini.get("database", "address");

@@ -14,7 +14,9 @@ import org.json.simple.parser.ParseException;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.*;
 
 public class Worker {
     private boolean flag_complete = false;
@@ -96,10 +98,12 @@ public class Worker {
 
             System.out.println("Загрузка пошла " + ++i + " ...");
 
+            long time = System.currentTimeMillis();
             jsonText = web.getContentByURL(url);
+            time = System.currentTimeMillis() - time;
             buffers.add(jsonText);
 
-            System.out.println("Загрузка окончена " + i + " ...\n");
+            System.out.println("Загрузка окончена " + i + " ...Затраченное время = " + time + "\n");
 
             offset += args.pageSize;
         }
@@ -118,9 +122,10 @@ public class Worker {
             System.out.println("Обработка пошла " + ++i + " ...");
 
             String jsonText = buffers.removeFirst();
-
+            long time = System.currentTimeMillis();
             work(jsonText, args);
-            System.out.println("Обработка окончена " + i + " ...\n");
+            time = System.currentTimeMillis() - time;
+            System.out.println("Обработка окончена " + i + " ...Затраченное время = " + time + "\n");
         }
     }
 
@@ -137,46 +142,42 @@ public class Worker {
             return;
         }
 
-        ArrayList<AbstractBlock> blockData = new ArrayList<>();
         SqlConnect sql = new SqlConnect();
         sql.connect(args);
 
-        for (Object singleData: arrayData) {
-            JSONObject data = (JSONObject) singleData;
-            String id = data.get("id").toString();
-
-            blockData.add(new Info((JSONObject) data.get("info"), id));
+        HashMap<String, ArrayList<AbstractBlock>> data= new HashMap<>();
+        for(String block : args.blocks) {
+            ArrayList<AbstractBlock> listBlocks = new ArrayList<>();
+            arrayData.forEach(singleData -> {
+                JSONObject tmp = (JSONObject) singleData;
+                String id = tmp.get("id").toString();
+                try {
+                    JSONArray array = (JSONArray) tmp.get(block);
+                    array.forEach(item -> {
+                        listBlocks.add(objAlloc(block, (JSONObject) item, id));
+                    });
+                    array.clear();
+                } catch (Exception e) {
+                    listBlocks.add(objAlloc(block, (JSONObject) tmp.get(block), id));
+                }
+            });
+            data.put(block, listBlocks);
         }
+        arrayData.clear();
 
         try {
-            sql.insertRecords(blockData);
-        } catch (SQLException e) {
+            sql.insertRecords(data.get(args.blocks[0]));
+        }  catch (SQLException e) {
             e.printStackTrace();
         }
 
-        for (Object singleData: arrayData) {
-            JSONObject data = (JSONObject) singleData;
-            String id = data.get("id").toString();
-
-            for (int i = 1; i < args.blocks.length; ++i) {
-                String block = args.blocks[i];
-                try {
-                    JSONArray array = (JSONArray) data.get(block);
-                    for (Object item : array)
-                        blockData.add(objAlloc(block, (JSONObject) item, id));
-                    array.clear();
-                } catch (Exception e) {
-                    blockData.add(objAlloc(block, (JSONObject) data.get(args.blocks[i]), id));
-                }
-
-                try {
-                    sql.insertRecords(blockData);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
+        for (int i = 1; i < args.blocks.length; ++i)
+            try {
+                sql.insertRecords(data.get(args.blocks[i]));
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        }
-        arrayData.clear();
+            
         sql.disconnect();
     }
 }
