@@ -143,7 +143,6 @@ public class Worker {
         }
 
         SqlConnect sql = new SqlConnect();
-        sql.connect(args);
 
         HashMap<String, ArrayList<AbstractBlock>> data= new HashMap<>();
         for(String block : args.blocks) {
@@ -165,19 +164,45 @@ public class Worker {
         }
         arrayData.clear();
 
+        sql.connect(args);
         try {
+            sql.sql.setAutoCommit(false);
             sql.insertRecords(data.get(args.blocks[0]));
         }  catch (SQLException e) {
             e.printStackTrace();
         }
 
-        for (int i = 1; i < args.blocks.length; ++i)
-            try {
-                sql.insertRecords(data.get(args.blocks[i]));
-            } catch (SQLException e) {
+
+        CountDownLatch countDownLatch = new CountDownLatch(args.blocks.length - 1);
+        ExecutorService es = Executors.newFixedThreadPool(8);
+        for (int i = 1; i < args.blocks.length; ++i) {
+            String block = args.blocks[i];
+            es.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        try {
+                            sql.insertRecords(data.get(block));
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    } finally {
+                        countDownLatch.countDown();
+                    }
+                }
+            });
+        }
+        try {
+                countDownLatch.await();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            
-        sql.disconnect();
+
+        try {
+            sql.sql.setAutoCommit(true);
+            sql.disconnect();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }

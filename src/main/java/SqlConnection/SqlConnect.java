@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 public class SqlConnect {
 
-    private Connection sql;
+    public Connection sql;
 
     private String getConnectionString(final ProgramArgs args) {
         return String.format(
@@ -53,13 +53,18 @@ public class SqlConnect {
         ps.execute();
     }
 
+    private void fillPreparedStatement(PreparedStatement ps, AbstractBlock block, int start_id) throws SQLException {
+        for (int i = start_id; i < block.fieldCount; ++i)
+            ps.setString(i + 1, block.data.get(block.fieldName[i]));
+        ps.addBatch();
+    }
+
     private int insertBatch(ArrayList<AbstractBlock> blocks) throws SQLException {
         PreparedStatement ps = sql.prepareStatement(blocks.get(0).getQuery());
-        for (AbstractBlock block : blocks) {
-            for (int i = 0; i < block.fieldCount; ++i)
-                ps.setString(i + 1, block.data.get(block.fieldName[i]));
-            ps.addBatch();
-        }
+
+        for (AbstractBlock block : blocks)
+            fillPreparedStatement(ps, block, 0);
+
         ps.executeBatch();
         ps.close();
         return 0;
@@ -72,10 +77,9 @@ public class SqlConnect {
 
         for (AbstractBlock block : blocks) {
             ps.setInt(1, id);
-            for (int i = 1; i < block.fieldCount; ++i)
-                ps.setString(i + 1, block.data.get(block.fieldName[i]));
-            ps.addBatch();
+            fillPreparedStatement(ps, block, 1);
         }
+
         return 0;
     }
 
@@ -133,6 +137,7 @@ public class SqlConnect {
 
     private int insertSignle2(ArrayList<AbstractBlock> blocks) throws SQLException {
         PreparedStatement ps = sql.prepareStatement(blocks.get(0).getQuery());
+
         PreparedStatement[] pss = new PreparedStatement[blocks.get(0).nested_tables.length];
 
         int id = getNextPrimaryKey(sql, blocks.get(0));
