@@ -4,4 +4,5 @@
 субъектов Российской Федерации.
 
 Описание структуры данных: http://budget.gov.ru/epbs/faces/p/Данные%20и%20сервисы/opendata?code=7710568760-FEDBUDGETAGREEMENT
-Сами данные: http://budget.gov.ru/epbs/registry/grants/data?
+
+Открытые данные: http://budget.gov.ru/epbs/registry/grants/data?
