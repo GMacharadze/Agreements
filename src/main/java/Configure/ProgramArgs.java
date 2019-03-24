@@ -8,7 +8,6 @@ import org.ini4j.Ini;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 
 public class ProgramArgs {
     /**
@@ -22,7 +21,8 @@ public class ProgramArgs {
      */
     final public String url = "http://budget.gov.ru/epbs/registry/grants/data?";
     final public int pageSize = 1000;
-    final public LinkedHashMap<String, blockType> blocks;
+    final public String[] blocks;
+    final public String[] tables;
     /**
      * iniFileName - имя ini-файла
      */
@@ -44,22 +44,20 @@ public class ProgramArgs {
     public String userPass;
 
     public ProgramArgs() {
-        blocks = new LinkedHashMap<>();
-        blocks.put("info", blockType.OTO);
-        blocks.put("grbs", blockType.OTO);
-        blocks.put("documents", blockType.OTM);
-        blocks.put("changes", blockType.OTM);
-        blocks.put("payments", blockType.OTM);
-        blocks.put("marks", blockType.OTM);
-        blocks.put("npa", blockType.OTM);
-        blocks.put("bo", blockType.OTM);
-        blocks.put("construct", blockType.OTM);
-        blocks.put("subjectNpa", blockType.OTM);
-        blocks.put("infoind", blockType.OTM);
-        blocks.put("infocost", blockType.OTM);
-        blocks.put("infosub", blockType.OTM);
-        blocks.put("infoind", blockType.OTM);
-        blocks.put("indicatorvalue", blockType.OTM);
+
+       blocks = new String[]{
+               "info", "grbs", "documents", "changes", "receiver", "payments", "plans", "faip",
+               "plansSubject", "faipSubject", "marks", "npa", "bo", "construct",
+               "subjectNpa", "infosub", "infocost", "indicatorvalue", "infoind",
+               "addagreement"
+       };
+
+       tables = new String[] {
+               "grbs", "documents", "changes", "payments",  "plans", "faip",
+               "FaipSubject", "Facts", "PlansSubject", "PlanTransSub", "AddAgreement",
+               "receiver", "LocalAddress", "ForeignAddress", "marks", "npa", "bo", "construct",
+               "subjectNpa", "infosub", "infocost", "indicatorvalue", "infoind", "info"
+       };
     }
 
     /**
@@ -85,18 +83,5 @@ public class ProgramArgs {
             return 1;
         }
         return 0;
-    }
-
-    /**
-     * Тип блока данных:
-     * OTO - каждой записи соответстует единственный блок;
-     * OTM - каждой записи соответствует несколько блоков;
-     * MTM - каждой записи соответствует несколько блоков и
-     * в каждом блоке возможно внутренняя иерархия блоков
-     */
-    public enum blockType {
-        OTO,
-        OTM,
-        MTM
     }
 }

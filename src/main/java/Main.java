@@ -5,27 +5,47 @@
 
 import Configure.ProgramArgs;
 import Web.WebManager;
+import org.json.simple.parser.ParseException;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         ProgramArgs pargs = new ProgramArgs();
         if (pargs.parseArgs() != 0)
             return;
+        long start = System.currentTimeMillis();
 
-        WebManager web = new WebManager();
         Worker work = new Worker();
-        int total_records = web.getTotalRecords(pargs);
-        int offset = 0;
-        String url;
-        while (offset < total_records) {
-            url = web.getUrlByOffset(pargs, offset);
-            String jsonText = web.getContentByURL(url);
+        work.clearAll(pargs);
 
-            work.work(jsonText, pargs);
-            
-            offset += pargs.pageSize;
-        }
+        Thread producer = new Thread(() -> {
+            try {
+                work.produce(pargs);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+        Thread consumer = new Thread(() -> {
+            try {
+                work.consume(pargs);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        });
+
+        producer.start();
+        consumer.start();
+
+        producer.join();
+        consumer.join();
+
+        System.out.println((System.currentTimeMillis() - start) / 60000.0);
         return;
     }
 }
