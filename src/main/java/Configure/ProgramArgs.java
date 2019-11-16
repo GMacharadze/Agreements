@@ -45,19 +45,22 @@ public class ProgramArgs {
 
     public ProgramArgs() {
 
-       blocks = new String[]{
-               "info", "grbs", "documents", "changes", "receiver", "payments", "plans", "faip",
-               "plansSubject", "faipSubject", "marks", "npa", "bo", "construct",
-               "subjectNpa", "infosub", "infocost", "indicatorvalue", "infoind",
-               "addagreement"
-       };
+        /* FIXME: @indicatorvalue удален из открытых данных, но не удален из паспорта данных.
+                  Как только в паспорте будет удалено упоминание этой структуры, окончательно
+                  удалить из кода */
+        blocks = new String[]{
+                "info", "grbs", "documents", "changes", "receiver", "payments", "plans", "faip",
+                "plansSubject", "faipSubject", "marks", "npa", "bo", "construct",
+                "subjectNpa", "infosub", "infocost", /*"indicatorvalue",*/ "infoind",
+                "addagreement"
+        };
 
-       tables = new String[] {
-               "grbs", "documents", "changes", "payments",  "plans", "faip",
-               "FaipSubject", "Facts", "PlansSubject", "PlanTransSub", "AddAgreement",
-               "receiver", "LocalAddress", "ForeignAddress", "marks", "npa", "bo", "construct",
-               "subjectNpa", "infosub", "infocost", "indicatorvalue", "infoind", "info"
-       };
+        tables = new String[] {
+                "grbs", "documents", "changes", "payments",  "plans", "faip",
+                "FaipSubject", "Facts", "PlansSubject", "PlanTransSub", "AddAgreement",
+                "receiver", "LocalAddress", "ForeignAddress", "marks", "npa", "bo", "construct",
+                "subjectNpa", "infosub", "infocost",/* "indicatorvalue",*/ "infoind", "info"
+        };
     }
 
     /**
