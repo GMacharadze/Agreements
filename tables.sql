@@ -295,13 +295,29 @@ id int not null primary key identity,
 id_info nvarchar(10) not null foreign key references info(id),
 sumtotal nvarchar(max),
 summonth nvarchar(max),
-code nvarchar(max),sumyear nvarchar(max),sumftyear nvarchar(max),sumskyear nvarchar(max),sumtryear nvarchar(max),sumfryear nvarchar(max),sumotheryear nvarchar(max),date nvarchar(max),name nvarchar(max)
+code nvarchar(max),
+sumyear nvarchar(max),
+sumftyear nvarchar(max),
+sumskyear nvarchar(max),
+sumtryear nvarchar(max),
+sumfryear nvarchar(max),
+sumotheryear nvarchar(max),
+date nvarchar(max),
+name nvarchar(max)
 );
 
 create table FaipSubject (
 id int not null primary key identity,
-id_info nvarchar(10) not null foreign key references info(id),name nvarchar(max),
-code nvarchar(max),sumyear nvarchar(max),sumftyear nvarchar(max),sumskyear nvarchar(max),sumtryear nvarchar(max),sumfryear nvarchar(max),sumotheryear nvarchar(max),date nvarchar(max),
+id_info nvarchar(10) not null foreign key references info(id),
+name nvarchar(max),
+code nvarchar(max),
+sumyear nvarchar(max),
+sumftyear nvarchar(max),
+sumskyear nvarchar(max),
+sumtryear nvarchar(max),
+sumfryear nvarchar(max),
+sumotheryear nvarchar(max),
+date nvarchar(max),
 summonth nvarchar(max)
 );
 
@@ -327,3 +343,17 @@ sumsubcur  nvarchar(max),
 sumsubrub  nvarchar(max),
 outersystem  nvarchar(max)
 );
+
+create table MBA (
+id int not null primary key identity,
+id_info nvarchar(10) not null foreign key references info(id),
+target nvarchar(max),
+kbk nvarchar(max),
+yearpay nvarchar(max),
+sumsubcur nvarchar(max),
+summba nvarchar(max),
+levelfin nvarchar(max),
+analyticalcode nvarchar(max),
+projectname nvarchar(max),
+codefaip nvarchar(max)
+)

@@ -66,6 +66,8 @@ public class Worker {
                 return new InfoInd(data, id);
             case "addagreement":
                 return new AddAgreement(data, id);
+            case "mba":
+                return new MBA(data, id);
             default:
                 return null;
         }
@@ -142,7 +144,6 @@ public class Worker {
             return;
         }
 
-        SqlConnect sql = new SqlConnect();
 
         HashMap<String, ArrayList<AbstractBlock>> data= new HashMap<>();
         for(String block : args.blocks) {
@@ -164,7 +165,10 @@ public class Worker {
         }
         arrayData.clear();
 
+        SqlConnect sql = new SqlConnect();
         sql.connect(args);
+
+        //insert info
         try {
             sql.sql.setAutoCommit(false);
             sql.insertRecords(data.get(args.blocks[0]));
@@ -173,6 +177,7 @@ public class Worker {
         }
 
 
+        //insert another blocks
         CountDownLatch countDownLatch = new CountDownLatch(args.blocks.length - 1);
         ExecutorService es = Executors.newFixedThreadPool(8);
         for (int i = 1; i < args.blocks.length; ++i) {

@@ -51,7 +51,7 @@ public class ProgramArgs {
         blocks = new String[]{
                 "info", "grbs", "documents", "changes", "receiver", "payments", "plans", "faip",
                 "plansSubject", "faipSubject", "marks", "npa", "bo", "construct",
-                "subjectNpa", "infosub", "infocost", /*"indicatorvalue",*/ "infoind",
+                "subjectNpa", "infosub", "infocost", /*"indicatorvalue",*/ "infoind", "mba",
                 "addagreement"
         };
 
@@ -59,7 +59,8 @@ public class ProgramArgs {
                 "grbs", "documents", "changes", "payments",  "plans", "faip",
                 "FaipSubject", "Facts", "PlansSubject", "PlanTransSub", "AddAgreement",
                 "receiver", "LocalAddress", "ForeignAddress", "marks", "npa", "bo", "construct",
-                "subjectNpa", "infosub", "infocost",/* "indicatorvalue",*/ "infoind", "info"
+                "subjectNpa", "infosub", "infocost",/* "indicatorvalue",*/ "infoind", "mba",
+                "info"
         };
     }
 

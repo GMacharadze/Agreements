@@ -123,7 +123,7 @@ public class SqlConnect {
 
             for (int i = 0; i < block.nested_tables.length; ++i) {
                 if (block.nested[i].isNull())
-                    ps.setNull(block.fieldCount + i + 1, java.sql.Types.INTEGER);
+                    ps.setNull(block.fieldCount + i + 1, Types.INTEGER);
                 else
                     ps.setInt(block.fieldCount + i + 1, ins(block.nested[i], sql));
             }
@@ -147,13 +147,14 @@ public class SqlConnect {
             for (int i = 1; i < block.fieldCount; ++i)
                 ps.setString(i + 1, block.data.get(block.fieldName[i]));
             ps.addBatch();
-
+            
             for (int i = 0; i < block.nested_tables.length; ++i) {
                 ArrayList<AbstractBlock> tmp = block.nested_array.get(i);
                 if (tmp.isEmpty())
                     continue;
-                pss[i] = sql.prepareStatement(tmp.get(0).getQuery());
-                insertBatch2(block.nested_array.get(i), pss[i], id++);
+                if (pss[i] == null)
+                    pss[i] = sql.prepareStatement(tmp.get(0).getQuery());
+                insertBatch2(tmp, pss[i], id++);
             }
         }
 
