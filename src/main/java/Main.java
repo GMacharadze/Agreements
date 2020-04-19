@@ -58,7 +58,6 @@ public class Main {
         }
 
         System.out.println((System.currentTimeMillis() - start) / 60000.0);
-        System.exit(0);
         return;
     }
 }
